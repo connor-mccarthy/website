@@ -1,6 +1,6 @@
 +++
 title = "Lightweight Python Components"
-description = "Author Lightweight Python Components"
+description = "Create a component from a self-contained Python function"
 weight = 1
 +++
 

@@ -1,7 +1,7 @@
 +++
 title = "Container Components"
-description = "Author Container Components"
-weight = 2
+description = "Create a component from an arbitrary container"
+weight = 4
 +++
 
 In KFP, each task execution corresponds to a container execution. This means that all components, even Python Components, are defined by an `image`, `command`, and `args`.
@@ -84,7 +84,9 @@ def say_hello(name: str, greeting: dsl.OutputPath(str)):
     args=[name, greeting])
 ```
 
-This usage makes output a named output, `greeting`, determined by the parameter name.
+When you use a `dsl.OutputPath` annotation, your component will be provided with a string path to which you should write the output parameter as JSON. Note that this string path is independent from the type argument provided to `dsl.OutputPath`; a parameter annotated `dsl.OutputPath(int)` will still be provided a string path argument, to which you should create an output of type `int`.
+
+The component above usage results in a string output named `greeting`.
 
 ### Using in a pipeline
 

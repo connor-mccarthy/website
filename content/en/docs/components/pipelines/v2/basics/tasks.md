@@ -1,7 +1,7 @@
 +++
 title = "Tasks"
 description = "Understand and use KFP tasks"
-weight = 2
+weight = 10
 +++
 
 ## Summary

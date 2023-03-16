@@ -1,5 +1,5 @@
 +++
-title = "Hello World"
+title = "Hello World Pipeline"
 description = "Create your first pipeline"
 weight = 1
 +++
