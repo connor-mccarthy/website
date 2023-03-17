@@ -1,7 +1,7 @@
 +++
 title = "Compile a pipeline"
 description = "Compile a pipeline definition to YAML"
-weight = 5
+weight = 22
 +++
 
 You can compile your pipeline or component to intermediate representation (IR) YAML.  The IR YAML definition preserves a static representation of the pipeline or component. You can submit the YAML definition to the KFP backend for execution, or deserialize it using the KFP SDK for integration into another pipeline.

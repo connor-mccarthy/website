@@ -1,7 +1,7 @@
 +++
 title = "Quickstart"
 description = "Get started with Kubeflow Pipelines"
-weight = 3
+weight = 21
                     
 +++
 

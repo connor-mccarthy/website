@@ -6,7 +6,7 @@ weight = 1
 +++
 
 
-Kubeflow Pipelines (KFP) is a platform for building and deploying portable and scalable machine learning (ML) workflows by using Docker containers.
+Kubeflow Pipelines (KFP) is a platform for building and deploying portable and scalable machine learning (ML) workflows using Docker containers.
 
 With KFP you can [author pipelines][author-a-pipeline] using the KFP Python SDK's domain-specific language (DSL), compile the pipeline to an [intermediate representation YAML][ir-yaml], and submit the pipeline to run on a KFP-conformant backend such as the [open source KFP backend][oss-be] or [Google Cloud Vertex AI Pipelines](https://cloud.google.com/vertex-ai/docs/pipelines/introduction).
 
@@ -21,12 +21,12 @@ KFP enables data scientists and machine learning engineers to:
 * Author end-to-end ML workflows natively in Python
 * Create fully custom ML components or leverage an ecosystem of existing components
 * Easily manage, track, and visualize pipeline definitions, runs, experiments, and ML artifacts
-* Efficiently use compute resources by eliminating redundant executions through [caching][caching] and parallel task execution out-of-the-box
+* Efficiently use compute resources by eliminating redundant executions through [caching][caching] and parallel task execution
 * Maintain cross-platform pipeline portability through a platform-neutral [IR YAML pipeline definition][ir-yaml]
 
 ## What is a pipeline?
 
-A [_pipeline_][pipelines] is the definition of a workflow with one or more steps called [_tasks_][tasks]. A task is an instantiation of a component with input parameters. At runtime, a task corresponds to a single container execution.
+A [pipeline][pipelines] is the definition of a workflow with one or more steps called [tasks][tasks]. A task is an instantiation of a component with input parameters. At runtime, a task corresponds to a single container execution.
 
 KFP provides a seamless way to author components that create output parameters and artifacts. Passing parameters and artifacts between tasks defines the pipeline's execution graph (directed acyclic graph).
 

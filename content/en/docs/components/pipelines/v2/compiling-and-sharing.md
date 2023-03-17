@@ -1,7 +1,7 @@
 +++
-title = "Pipelines"
-description = "Create a pipeline"
-weight = 3
+title = "Compiling and sharing"
+description = ""
+weight = 6
 +++
 
 A *pipeline* is a description of a multi-task workflow, including how tasks relate to each other to form an computational graph. Pipelines may have inputs which can be passed to tasks within the pipeline.
