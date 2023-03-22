@@ -1,14 +1,19 @@
 +++
 title = "Hello World Pipeline"
 description = "Create your first pipeline"
-weight = 2
+weight = 3
 +++
+
+To get started with the tutorials, pip install `kfp` v2:
+
+```sh
+pip install kfp --pre
+```
 
 Here is a simple pipeline that prints a greeting:
 
 ```python
 from kfp import dsl
-from kfp import compiler
 
 @dsl.component
 def say_hello(name: str) -> str:
@@ -17,32 +22,40 @@ def say_hello(name: str) -> str:
     return hello_text
 
 @dsl.pipeline
-def hello_pipeline(person_to_greet: str) -> str:
-    hello_task = say_hello(name=person_to_greet)
+def hello_pipeline(recipient: str) -> str:
+    hello_task = say_hello(name=recipient)
     return hello_task.output
-
-compiler.Compiler().compile(addition_pipeline, 'pipeline.yaml')
 ```
 
-The `dsl.component` decorator and the `dsl.pipeline` turn your type-annotated Python functions into components and pipelines, respectively. The KFP SDK compiler compiles the domain-specific language (DSL) objects to a hermetic pipeline YAML file.
+You can compile the pipeline to YAML with the KFP SDK DSL compiler:
 
-You can submit the YAML file to a KFP-conformant backend for execution. If you have already installed a [KFP open source backend deployment][installation] and [obtained the endpoint][get-endpoint] for your deployment, you can submit the pipeline for execution using the KFP SDK [`Client`][client]. We'll pass the argument `person_to_greet='World'`:
+```python
+from kfp import compiler
+
+compiler.Compiler().compile(hello_pipeline, 'pipeline.yaml')
+```
+
+The `dsl.component` and `dsl.pipeline` decorators turn your type-annotated Python functions into components and pipelines, respectively. The KFP SDK compiler compiles the domain-specific language (DSL) objects to a hermetic pipeline [YAML file][ir-yaml].
+
+You can submit the YAML file to a KFP-conformant backend for execution. If you have already deployed a [KFP open source backend instance][installation] and obtained the endpoint for your deployment, you can submit the pipeline for execution using the KFP SDK [`Client`][client]. The following submits the pipeline for execution with the argument `recipient='World'`:
 
 ```python
 from kfp.client import Client
+
 client = Client(host='<MY-KFP-ENDPOINT>')
 run = client.create_run_from_pipeline_package(
     'pipeline.yaml',
     arguments={
-        'person_to_greet': 'World',
+        'recipient': 'World',
     },
 )
 ```
 
-Click the link printed by the client to view the pipeline run in the UI to inspect the pipeline, which prints and returns `'Hello, world!'`.
+The client will print a link to view the pipeline execution graph and logs in the UI. In this case, the pipeline has one task that prints and returns `'Hello, world!'`.
 
-In the next few examples, you'll learn more about the core concepts of authoring pipelines and how to create more expressive, useful pipelines.
+In the next few sections you'll learn more about the core concepts of authoring pipelines and how to create more expressive, useful pipelines.
 
 [installation]: /docs/components/pipelines/v2/installation/
-[client]: https://kubeflow-pipelines.readthedocs.io/en/2.0.0b13/source/client.html#kfp.client.Client
+[client]: https://kubeflow-pipelines.readthedocs.io/en/master/source/client.html#kfp.client.Client
 [get-endpoint]: TODO
+[ir-yaml]: /docs/components/pipelines/v2/compile-and-share-components#ir-yaml

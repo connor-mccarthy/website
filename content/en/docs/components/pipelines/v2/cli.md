@@ -1,7 +1,7 @@
 +++
 title = "Command Line Interface"
 description = "Interact with KFP via the CLI"
-weight = 8
+weight = 9
 +++
 
 <!-- TODO: Improve or standardize rendering of variables and placeholders -->
@@ -46,11 +46,16 @@ kfp run --help
 
 You can use the KFP CLI to do the following:
 
-* [Interact with KFP resources](#interact-with-kfp-resources)
-
-* [Compile pipelines](#compile-pipelines)
-
-* [Build containerized Python components](#build-containerized-python-components)
+- [Usage](#usage)
+  - [Check availability of KFP CLI](#check-availability-of-kfp-cli)
+  - [General syntax](#general-syntax)
+  - [Get help for a command](#get-help-for-a-command)
+- [Main functons of the KFP CLI](#main-functons-of-the-kfp-cli)
+  - [Interact with KFP resources](#interact-with-kfp-resources)
+  - [Compile pipelines](#compile-pipelines)
+  - [Build containerized Python components](#build-containerized-python-components)
+    - [Before you begin](#before-you-begin)
+    - [Build the component](#build-the-component)
 
 ### Interact with KFP resources
 

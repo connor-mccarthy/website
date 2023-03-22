@@ -4,7 +4,7 @@ description = "Create a component from a self-contained Python function"
 weight = 1
 +++
 
-The easiest way to get started authoring components is by creating a Lightweight Python Component. We saw an example of the `say_hello` Lightweight Python Components in the [Hello World][hello-world-pipeline] pipeline. Let's take a look at another Lightweight Python Component that adds two numbers together:
+The easiest way to get started authoring components is by creating a Lightweight Python Component. We saw an example of a Lightweight Python Component with `say_hello` in the [Hello World pipeline example][hello-world-pipeline]. Here is another Lightweight Python Component that adds two integers together:
 
 ```python
 from kfp import dsl
@@ -14,19 +14,19 @@ def add(a: int, b: int) -> int:
     return a + b
 ```
 
-The `@dsl.component` decorator turns Python functions into components that can be used in a pipeline definition or executed independently as a single step pipeline.
+Lightweight Python Components are constructed by decorating Python functions with the [`@dsl.component`][dsl-component] decorator. The `@dsl.component` decorator transforms your function into a KFP component that can be executed as a remote function by a KFP conformant-backend, either independently or as a single step in a larger pipeline.
 
 ### Python function requirements
-There are a few requirements for functions that can be decorated with the `@dsl.component` decorator:
+To decorate a function with the `@dsl.component` decorator it must meet two requirements:
 
 
-1. **Type annotations:** The function inputs and outputs must have valid KFP type annotations.
+1. **Type annotations:** The function inputs and outputs must have valid KFP [type annotations][data-types].
 
-    There are two forms of inputs/outputs in KFP: parameters and artifacts. The type affects UI rendering, ML metadata tracking, and how you interact with the input/output inside the component body.
-
-    The type of the input/output is determined by its annotation. In the example above `a` and `b` are both parameters of type `int`. Valid parameter annotations include Python's built-in `int`, `float`, `str`, `bool`, `typing.Dict`, and `typing.List`.
+    There are two categories of inputs and outputs in KFP: [parameters][parameters] and [artifacts][artifacts]. There are specific types of parameters and artifacts within each category. Every input and output will have a specific type indicated indicated by its type annotation.
     
-    Artifacts are discussed in detail in [Data Types][data-types].
+    In the preceding `add` component, both inputs `a` and `b` are parameters typed `int`. There is one output, also typed `int`.
+    
+    Valid parameter annotations include Python's built-in `int`, `float`, `str`, `bool`, `typing.Dict`, and `typing.List`. Artifact annotations are discussed in detail in [Data Types: Artifacts][artifacts].
 
 
 2. **Hermetic:** The Python function may not reference any symbols defined outside of its body.
@@ -47,7 +47,7 @@ There are a few requirements for functions that can be decorated with the `@dsl.
     INVALID_CONSTANT = 2
     
     @dsl.component
-    def multiply(a: int) -> int:
+    def errored_double(a: int) -> int:
         """Fails at runtime."""
         return INVALID_CONSTANT * a
     ```
@@ -56,23 +56,23 @@ There are a few requirements for functions that can be decorated with the `@dsl.
 
     ```python
     @dsl.component
-    
     def print_env():
         import os
         print(os.environ)
     ```
 
 
-    This is, of course, a fairly constraining requirement, so we'll drop this constraint later when we look at the more flexible [Containerized Python Components][containerized-python-components].
+    For many realistic components, hermeticism can be a fairly constraining requirement. [Containerized Python Components][containerized-python-components] is a more flexible authoring approach that drops this requirement.
 
-### dsl.component Decorator Arguments
-In the above examples we used the [`@dsl.component`][https://kubeflow-pipelines.readthedocs.io/en/master/source/dsl.html#kfp.dsl.component] with only one argument: the Python function.
-
-The decorator accepts some additional arguments, which are described by the [KFP SDK DSL reference docs][dsl-reference-documentation].
+### dsl.component decorator arguments
+In the above examples we used the [`@dsl.component`][dsl-component] decorator with only one argument: the Python function. The decorator accepts some additional arguments.
 
 #### packages_to_install
 
-Most realistic Lightweight Python Components will depend on other Python libraries. You can pass a list of requirements to `packages_to_install` and the component will install these packages at runtime:
+Most realistic Lightweight Python Components will depend on other Python libraries. You can pass a list of requirements to `packages_to_install` and the component will install these packages at runtime before executing the component function.
+
+
+This is similar to including this requirements in a [`requirements.txt`][requirements-txt] file.
 
 ```python
 @dsl.component(packages_to_install=['numpy==1.21.6'])
@@ -81,7 +81,9 @@ def sin(val: float = 3.14) -> float:
 ```
 #### pip_index_urls
 
-`pip_index_urls` exposes the ability to pip install `packages_to_install` from the non-default package index [PyPI.org](https://pypi.org/) (index URL: https://pypi.org/simple). Specifically, `pip_index_urls` allows you to modify [`pip install`](https://pip.pypa.io/)'s [`--index-url`](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-0) and [`--extra-index-url`](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-extra-index-url) options.
+`pip_index_urls` exposes the ability to pip install `packages_to_install` from package indexes other than [PyPI.org][pypi-org].
+
+When you set `pip_index_urls`, KFP passes these indices to [`pip install`][pip-install]'s [`--index-url`][pip-index-url] and [`--extra-index-url`][pip-extra-index-url] options.
 
 Take the following component:
 
@@ -91,20 +93,21 @@ Take the following component:
 )
 def comp():
     from custom_ml_package import model_trainer
+    import numpy as np
     ...
 ```
 
-These arguments translate to the following command:
+These arguments approximately translate to the following `pip install` command:
 
 ```sh
 pip install custom-ml-package==0.0.1 numpy==1.21.6 kfp==2 --index-url http://myprivaterepo.com/simple --trusted-host http://myprivaterepo.com/simple --extra-index-url http://pypi.org/simple --trusted-host http://pypi.org/simple
 ```
 
-Note that `'http://pypi.org/simple'` is not included in `pip_index_urls` by default. The example above includes this index URL explicitly so that `kfp` and `numpy` can be installed, even though they are not hosted at `http://myprivaterepo.com/simple`.
+Note that when you set `pip_index_urls`, KFP does not include `'http://pypi.org/simple'` automatically. If you wish to pip install packages from a private repository _and_ the default public repository, you should include both the private and default index urls as shown in the previous component `comp`.
 
 #### base_image
 
-When you create a Lightweight Python Component, your Python function code is extracted by the KFP SDK and executed inside of a container. By default, the container image used is [`python:3.7`](https://hub.docker.com/_/python). You can override this image with `base_image`. This can be useful if your code requires a specific Python version or dependencies included in the non-default image.
+When you create a Lightweight Python Component, your Python function code is extracted by the KFP SDK and executed inside of a container at pipeline runtime. By default, the container image used is [`python:3.7`](https://hub.docker.com/_/python). You can override this image by providing an argument to `base_image`. This can be useful if your code requires a specific Python version or other dependencies not included in the default image.
 
 ```python
 @dsl.component(base_image='python:3.8')
@@ -113,20 +116,26 @@ def print_py_version():
     print(sys.version)
 ```
 
-#### install_kfp_package and kfp_package_path
-<!-- Describing as the KFP runtime package, because eventually we may convert this to a true runtime package. It's best that users think of it this way, even though it currently installs the full KFP package. -->
+#### install_kfp_package
+`install_kfp_package` can be used together with `pip_index_urls` to provide granular control over installation of the `kfp` package at component runtime.
 
-`install_kfp_package` and `kfp_package_path` can be used together to provide granular control over whether and from where the `kfp` runtime package is installed at component runtime. **Note:** This is generally not necessary and is discouraged for the majority of use-cases.
+By default, Python Components install `kfp` at runtime. This is required to define symbols used by your component (such as [artifact annotations][artifacts]) and to access additional KFP library code required to execute your component remotely. If `install_kfp_package` is `False`, `kfp` will not be installed via the normal mechanism. This enables you to use `packages_to_install` and `pip_index_urls` to install a different version of `kfp`, possibly from a non-default pip index URL.
 
-By default, the `kfp` runtime package will be installed at component runtime. This is how KFP executes your Python function on your behalf. `install_kfp_package` can be set to `False` to disable this behavior. `kfp_package_path` or `pip_index_urls` can be used to install `kfp` from another location, such as a GitHub branch or a private package repository, respectively.
+Note that setting `install_kfp_package` to `False` is rarely necessary and is discouraged for the majority of use cases.
 
 
 
 
 [data-passing]: /docs/components/pipelines/v2/author-a-pipeline/component-io
-[dsl-reference-documentation]: https://kubeflow-pipelines.readthedocs.io/en/master/source/dsl.html
 [python-docker-image]: https://hub.docker.com/_/python
-[hello-world-pipeline]: TODO
-[type-annotations]: TODO
-[data-types]: TODO
-[containerized-python-components]: TODO
+[hello-world-pipeline]: /docs/components/pipelines/v2/hello-world
+[containerized-python-components]: /docs/components/pipelines/v2/components/containerized-python-components
+[dsl-component]: https://kubeflow-pipelines.readthedocs.io/en/master/source/dsl.html#kfp.dsl.component
+[data-types]: /docs/components/pipelines/v2/data-types
+[parameters]: /docs/components/pipelines/v2/data-types/parameters
+[artifacts]: /docs/components/pipelines/v2/data-types/artifacts
+[requirements-txt]: https://pip.pypa.io/en/stable/reference/requirements-file-format/
+[pypi-org]: https://pypi.org/
+[pip-install]: https://pip.pypa.io/
+[pip-index-url]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-0
+[pip-extra-index-url]: https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-extra-index-url
